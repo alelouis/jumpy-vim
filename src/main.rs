@@ -148,7 +148,7 @@ fn process_kb(
 
                 let translation = &mut transform.translation;
                 translation.x = p_next.x as f32 * 20. - 150. + 10.;
-                translation.y = p_next.y as f32 * 20. - 150. + 10.;
+                translation.y = p_next.y as f32 * 40. - 150. + 10.;
             }
         }
     }
@@ -156,27 +156,34 @@ fn process_kb(
 
 // left
 fn vim_move_h(p: Position) -> Position{
-    return Position{x: p.x - 1, y: p.y}
+    Position{x: p.x - 1, y: p.y}
 }
 
 // top
 fn vim_move_j(p: Position) -> Position{
-    return Position{x: p.x, y: p.y - 1}
+    Position{x: p.x, y: p.y - 1}
 }
 
 // bottom
 fn vim_move_k(p: Position) -> Position{
-    return Position{x: p.x, y: p.y + 1}
+    Position{x: p.x, y: p.y + 1}
 }
 
 // right
 fn vim_move_l(p: Position) -> Position{
-    return Position{x: p.x + 1, y: p.y}
+    Position{x: p.x + 1, y: p.y}
 }
 
 // begin of previous word
 fn vim_move_w(p: Position, w: &Vec<Vec<u8>>) -> Position{
-    return Position{x: p.x, y: p.y}
+    let mut r = Position{x: p.x, y: p.y};
+    for i in (0..p.x as usize).rev(){
+        if w[p.y as usize][i] == 2 {
+            r.x = i as i32;
+            break;
+        }
+    }
+    r
 }
 
 // begin of next word
@@ -188,10 +195,17 @@ fn vim_move_b(p: Position, w: &Vec<Vec<u8>>) -> Position{
             break;
         }
     }
-    return r
+    r
 }
 
 // end of next word
 fn vim_move_e(p: Position, w: &Vec<Vec<u8>>) -> Position{
-    return Position{x: p.x, y: p.y}
+    let mut r = Position{x: p.x, y: p.y};
+    for i in (p.x + 1) as usize..w[0].len(){
+        if w[p.y as usize][i] == 3 {
+            r.x = i as i32;
+            break;
+        }
+    }
+    r
 }
