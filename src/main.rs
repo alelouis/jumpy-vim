@@ -20,6 +20,18 @@ fn main() {
 
     App::build()
         .insert_resource(ClearColor(Color::rgb(0., 0., 0.)))
+        .insert_resource(WorldGrid{
+            data: vec![
+                vec![0, 0, 2, 1, 1, 1, 1, 3, 0, 2, 1, 1, 3, 0, 0], 
+                vec![2, 1, 1, 1, 3, 0, 0, 0, 0, 2, 1, 1, 3, 0, 0],
+                vec![0, 0, 2, 1, 1, 1, 1, 3, 0, 2, 1, 1, 3, 0, 0],
+                vec![2, 1, 1, 1, 3, 0, 0, 0, 0, 2, 1, 1, 3, 0, 0],
+                vec![0, 0, 2, 1, 1, 1, 1, 3, 0, 2, 1, 1, 3, 0, 0],
+                vec![2, 1, 1, 1, 3, 0, 0, 0, 0, 2, 1, 1, 3, 0, 0],
+                vec![0, 0, 2, 1, 1, 1, 1, 3, 0, 2, 1, 1, 3, 0, 0],
+                vec![2, 1, 1, 1, 3, 0, 0, 0, 0, 2, 1, 1, 3, 0, 0],
+                vec![0, 0, 2, 1, 1, 1, 1, 3, 0, 2, 1, 1, 3, 0, 0]],
+        })
         .insert_resource(WindowDescriptor { 
             title: "Jumpy Vim".to_string(), 
             width: 300.0, 
@@ -67,31 +79,18 @@ fn setup_player(
 
 fn setup_world_grid(
     mut commands: Commands,
+    world: Res<WorldGrid>,
     asset_server: Res<AssetServer>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ){
-    // Setups world grid and draw initial sprites
-
-    let data = vec![
-        vec![0, 0, 2, 1, 1, 1, 1, 3, 0, 2, 1, 1, 3, 0, 0], 
-        vec![2, 1, 1, 1, 3, 0, 0, 0, 0, 2, 1, 1, 3, 0, 0],
-        vec![0, 0, 2, 1, 1, 1, 1, 3, 0, 2, 1, 1, 3, 0, 0],
-        vec![2, 1, 1, 1, 3, 0, 0, 0, 0, 2, 1, 1, 3, 0, 0],
-        vec![0, 0, 2, 1, 1, 1, 1, 3, 0, 2, 1, 1, 3, 0, 0],
-        vec![2, 1, 1, 1, 3, 0, 0, 0, 0, 2, 1, 1, 3, 0, 0],
-        vec![0, 0, 2, 1, 1, 1, 1, 3, 0, 2, 1, 1, 3, 0, 0],
-        vec![2, 1, 1, 1, 3, 0, 0, 0, 0, 2, 1, 1, 3, 0, 0],
-        vec![0, 0, 2, 1, 1, 1, 1, 3, 0, 2, 1, 1, 3, 0, 0]];
+    // Setups world grid and draw initial sprites)
     
     // 0 no brick
     // 1 brick
     // 2 start brick
     // 3 end brick
 
-    commands.spawn().insert(WorldGrid{
-        data: data.clone(),
-    });
-
+    let data = &world.data;
     let black_sprite = materials.add(asset_server.load("black.png").into());
     let white_sprite = materials.add(asset_server.load("white.png").into());
     let blue_sprite = materials.add(asset_server.load("blue.png").into());
@@ -124,6 +123,7 @@ fn setup_world_grid(
 
 fn process_kb(
     mut kb: EventReader<KeyboardInput>,
+    world: Res<WorldGrid>,
     mut query: Query<(&mut Transform, &mut Position, With<Player>)>,
 ){
     // Processes incoming keyboard messages as vim commands and moves player/marker
@@ -138,9 +138,9 @@ fn process_kb(
                     Some(KeyCode::J) => vim_move_j(p),
                     Some(KeyCode::K) => vim_move_k(p),
                     Some(KeyCode::L) => vim_move_l(p),
-                    Some(KeyCode::W) => vim_move_w(p),
-                    Some(KeyCode::B) => vim_move_b(p),
-                    Some(KeyCode::E) => vim_move_e(p),
+                    Some(KeyCode::W) => vim_move_w(p, &world.data),
+                    Some(KeyCode::B) => vim_move_b(p, &world.data),
+                    Some(KeyCode::E) => vim_move_e(p, &world.data),
                     _ => p,
                 };
                 position.x = p_next.x;
@@ -175,16 +175,23 @@ fn vim_move_l(p: Position) -> Position{
 }
 
 // begin of previous word
-fn vim_move_w(p: Position) -> Position{
+fn vim_move_w(p: Position, w: &Vec<Vec<u8>>) -> Position{
     return Position{x: p.x, y: p.y}
 }
 
 // begin of next word
-fn vim_move_b(p: Position) -> Position{
-    return Position{x: p.x, y: p.y}
+fn vim_move_b(p: Position, w: &Vec<Vec<u8>>) -> Position{
+    let mut r = Position{x: p.x, y: p.y};
+    for i in (p.x + 1) as usize..w[0].len(){
+        if w[p.y as usize][i] == 2 {
+            r.x = i as i32;
+            break;
+        }
+    }
+    return r
 }
 
 // end of next word
-fn vim_move_e(p: Position) -> Position{
+fn vim_move_e(p: Position, w: &Vec<Vec<u8>>) -> Position{
     return Position{x: p.x, y: p.y}
 }
