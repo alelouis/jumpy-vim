@@ -7,3 +7,5 @@ edition = "2018"
 
 [dependencies]
 bevy = { version = "0.5.0", features = ["dynamic"] }
+keyframe = "1.0.4"
+rand = "0.8"
