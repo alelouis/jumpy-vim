@@ -305,8 +305,8 @@ fn process_kb(
 
     use bevy::input::ElementState;
     for ev in kb.iter() {
-        if ev.state == ElementState::Pressed {
-            for (entity, mut position, timer, _) in query.iter_mut() {
+        for (entity, mut position, timer, _) in query.iter_mut() {
+            if ev.state == ElementState::Pressed && timer.is_none(){
                 let p = Position {
                     x: position.x,
                     y: position.y,
@@ -326,15 +326,10 @@ fn process_kb(
                 };
                 position.x = p_next.x;
                 position.y = p_next.y;
-
-                if timer.is_none() {
                     commands
                         .entity(entity)
                         .insert(Timer::from_seconds(1.0, false))
                         .insert(FromPos(p));
-                } else {
-                    timer.unwrap().reset();
-                }
             }
         }
     }
